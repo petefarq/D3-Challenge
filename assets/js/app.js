@@ -1,13 +1,13 @@
 // Initialize SVG
 
 var svgWidth = 960;
-var svgHeight = 600;
+var svgHeight = 700;
 
 var margin = {
   top: 20,
   right: 40,
-  bottom: 60,
-  left: 100
+  bottom: 120,
+  left: 50
 };
 
 var width = svgWidth - margin.left - margin.right;
@@ -32,16 +32,20 @@ d3.csv("/assets/data/data.csv").then(function(data) {
     data.forEach(function(data) {
       data.poverty = +data.poverty;
       data.healthcare = +data.healthcare;
+      data.obesity = +data.obesity;
+      data.income = +data.income;
+      data.age = +data.age;
+      data.smokes = +data.smokes;
     });
 
     // Create scale functions
     // ==============================
     var xLinearScale = d3.scaleLinear()
-      .domain([d3.min(data, d => d.poverty-1), d3.max(data, d => d.poverty+1)])
+      .domain([d3.min(data, d => d.poverty)-1, d3.max(data, d => d.poverty)+1])
       .range([0, width]);
 
     var yLinearScale = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.healthcare+1)])
+      .domain([0, d3.max(data, d => d.healthcare)+1])
       .range([height, 0]);
 
     // Create axis functions
@@ -62,9 +66,9 @@ d3.csv("/assets/data/data.csv").then(function(data) {
     //==============================
     var toolTip = d3.tip()
       .attr("class", "d3-tip")
-      .offset([+2, 0])
+      .offset([-5, 0])
       .html(function(d) {
-        return (`<u>${d.state}</u><br>Poverty rate: ${d.poverty}%<br>Lack Healthcare: ${d.healthcare}%`);
+        return (`<u>${d.state}</u><br>Poverty Rate: ${d.poverty}%<br>% Lack Healthcare: ${d.healthcare}%`);
       });
 
     // Create tooltip in the chart
@@ -72,13 +76,13 @@ d3.csv("/assets/data/data.csv").then(function(data) {
     chartGroup.call(toolTip);
 
     // Create circle labels
-        var circleLabels = chartGroup.selectAll("text")
+        var circleLabels = chartGroup.selectAll(".label")
             .data(data)
             .enter()
             .append("text") 
             .attr("x", d => xLinearScale(d.poverty))
             .attr("y", d => yLinearScale(d.healthcare)+5)
-            .attr("class","stateText")
+            .attr("class","label")
             .attr("fill","black")
             .text(d => d.abbr);
 
@@ -90,42 +94,38 @@ d3.csv("/assets/data/data.csv").then(function(data) {
         .append("circle")
         .attr("cx", d => xLinearScale(d.poverty))
         .attr("cy", d => yLinearScale(d.healthcare))
-        .attr("r", "25")
-        .attr("stroke","black")
-        .attr("stroke-width","2")
+        .attr("r", "20")
         .attr("fill", "green")
-        .attr("opacity", .4)
-        .on('mouseover', toolTip.show)
-        .on('mouseout', toolTip.hide);
-
-    // Step 8: Create event listeners to display and hide the tooltip
-    // ==============================
-    // circlesGroup.on("click", function(data) {
-    //   toolTip.show(data, this);
-    // })
-    //   // onmouseout event
-    //   .on("mouseout", function(data, index) {
-    //     toolTip.hide(data);
-    //   });
+        .attr("opacity", .3)
+        .attr("stroke", "black")
+        .attr("stroke-width","0")
+        .on('mouseover', function(d) {
+          d3.select(this).style('stroke-width','4');
+          toolTip.show(d);
+        })
+        .on('mouseout', function(d) {
+          d3.select(this).style('stroke-width','0');
+          toolTip.hide(d);
+        })
 
     // Create axes labels
-    chartGroup.append("text")
+        chartGroup.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left + 40)
+      .attr("y", 0 - margin.left)
       .attr("x", 0 - (height / 2))
       .attr("dy", "1em")
       .attr("class", "aText")
       .text("% Lack Healthcare");
 
     chartGroup.append("text")
-      .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
+      .attr("transform", `translate(${width / 2}, ${height + margin.top + 20})`)
       .attr("class", "aText")
       .text("% In Poverty");
+
+    
   }).catch(function(error) {
     console.log(error);
   });
 
-
-// Create clickable elements
 
 
